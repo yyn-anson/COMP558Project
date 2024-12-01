@@ -120,17 +120,38 @@ function result = computeMATpropertyPerBranch(curBranch,property,K)
         //     alpha = 1; % Adjust alpha as needed
         //     result = 1 - exp(-alpha * M_normalized);
 
+        // case 'convexity'
+        //     % Compute curvature (κ) using the derivatives
+        //     curvature = abs(dX .* diff(dY) - dY .* diff(dX)) ./ (sqrt(dX.^2 + dY.^2).^3 + eps);
+        //     curvature = [curvature; curvature(end)]; % Padding to match dimensions
+
+        //     % Normalize curvature to compute convexity measure
+        //     maxCurvature = max(curvature);
+        //     if maxCurvature > 0
+        //         result = curvature / (maxCurvature + eps);
+        //     else
+        //         result = zeros(N, 1);
+        //     end
+
         case 'convexity'
             % Compute curvature (κ) using the derivatives
             curvature = abs(dX .* diff(dY) - dY .* diff(dX)) ./ (sqrt(dX.^2 + dY.^2).^3 + eps);
             curvature = [curvature; curvature(end)]; % Padding to match dimensions
 
-            % Normalize curvature to compute convexity measure
-            maxCurvature = max(curvature);
-            if maxCurvature > 0
-                result = curvature / (maxCurvature + eps);
-            else
-                result = zeros(N, 1);
+            % Average curvature over the range [i-K, i+K]
+            if N >= 3
+                for i = 1:N
+                    % Effective K (handle boundary cases)
+                    eK = min(min(i-1, N-i), K);
+                    range = max(1, i-eK):min(N, i+eK);
+
+                    % Sum curvature over the range
+                    integralCurvature = sum(curvature(range));
+
+                    % Normalize by range length (average curvature)
+                    rangeLength = length(range);
+                    result(i) = integralCurvature / rangeLength;
+                end
             end
             
         otherwise
