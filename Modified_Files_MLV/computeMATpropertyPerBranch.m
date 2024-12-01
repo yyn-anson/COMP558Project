@@ -93,33 +93,46 @@ function result = computeMATpropertyPerBranch(curBranch,property,K)
                 [~,~,result] = fitLineSegments([X,Y]);
             end
 
+        // case 'convexity'
+        //     % Computing the convexity measure using |r''(x)|.
+        //     dR = smoothdata(dR); % Smooth the first derivative of the radius function
+        //     ddR = diff(dR); % Compute the second derivative
+        //     if length(ddR) >= 1
+        //         newddR = [ddR; ddR(end)];
+        //     else
+        //         newddR = dR;
+        //     end
+        //     ddR = newddR;
+        //     ddR = smoothdata(ddR); % Smooth the second derivative
+
+        //     % Compute the integral of |r''(x)| over the branch
+        //     M = abs(ddR); % Magnitude of the second derivative
+
+        //     % Normalize by the length of the branch
+        //     branchLength = sum(sqrt(dX.^2 + dY.^2));
+        //     if branchLength > 0
+        //         M_normalized = M / branchLength; % Normalize measure
+        //     else
+        //         M_normalized = M;
+        //     end
+
+        //     % Map to [0, 1] using the bounded function
+        //     alpha = 1; % Adjust alpha as needed
+        //     result = 1 - exp(-alpha * M_normalized);
+
         case 'convexity'
-            % Computing the convexity measure using |r''(x)|.
-            dR = smoothdata(dR); % Smooth the first derivative of the radius function
-            ddR = diff(dR); % Compute the second derivative
-            if length(ddR) >= 1
-                newddR = [ddR; ddR(end)];
+            % Compute curvature (κ) using the derivatives
+            curvature = abs(dX .* diff(dY) - dY .* diff(dX)) ./ (sqrt(dX.^2 + dY.^2).^3 + eps);
+            curvature = [curvature; curvature(end)]; % Padding to match dimensions
+
+            % Normalize curvature to compute convexity measure
+            maxCurvature = max(curvature);
+            if maxCurvature > 0
+                result = curvature / (maxCurvature + eps);
             else
-                newddR = dR;
+                result = zeros(N, 1);
             end
-            ddR = newddR;
-            ddR = smoothdata(ddR); % Smooth the second derivative
-
-            % Compute the integral of |r''(x)| over the branch
-            M = abs(ddR); % Magnitude of the second derivative
-
-            % Normalize by the length of the branch
-            branchLength = sum(sqrt(dX.^2 + dY.^2));
-            if branchLength > 0
-                M_normalized = M / branchLength; % Normalize measure
-            else
-                M_normalized = M;
-            end
-
-            % Map to [0, 1] using the bounded function
-            alpha = 1; % Adjust alpha as needed
-            result = 1 - exp(-alpha * M_normalized);
-         
+            
         otherwise
             
             % 
