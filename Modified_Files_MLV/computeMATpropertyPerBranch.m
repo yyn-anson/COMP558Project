@@ -153,6 +153,15 @@ function result = computeMATpropertyPerBranch(curBranch,property,K)
                     result(i) = integralCurvature / rangeLength;
                 end
             end
+
+            % Normalize the result to [0, 1]
+            maxResult = max(result);
+            if maxResult > 0
+                result = result / maxResult;
+            else
+                result = zeros(N, 1); % In case all curvatures are zero
+            end
+
             
         otherwise
             
