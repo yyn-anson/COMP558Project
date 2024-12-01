@@ -93,75 +93,29 @@ function result = computeMATpropertyPerBranch(curBranch,property,K)
                 [~,~,result] = fitLineSegments([X,Y]);
             end
 
-        // case 'convexity'
-        //     % Computing the convexity measure using |r''(x)|.
-        //     dR = smoothdata(dR); % Smooth the first derivative of the radius function
-        //     ddR = diff(dR); % Compute the second derivative
-        //     if length(ddR) >= 1
-        //         newddR = [ddR; ddR(end)];
-        //     else
-        //         newddR = dR;
-        //     end
-        //     ddR = newddR;
-        //     ddR = smoothdata(ddR); % Smooth the second derivative
-
-        //     % Compute the integral of |r''(x)| over the branch
-        //     M = abs(ddR); % Magnitude of the second derivative
-
-        //     % Normalize by the length of the branch
-        //     branchLength = sum(sqrt(dX.^2 + dY.^2));
-        //     if branchLength > 0
-        //         M_normalized = M / branchLength; % Normalize measure
-        //     else
-        //         M_normalized = M;
-        //     end
-
-        //     % Map to [0, 1] using the bounded function
-        //     alpha = 1; % Adjust alpha as needed
-        //     result = 1 - exp(-alpha * M_normalized);
-
-        // case 'convexity'
-        //     % Compute curvature (κ) using the derivatives
-        //     curvature = abs(dX .* diff(dY) - dY .* diff(dX)) ./ (sqrt(dX.^2 + dY.^2).^3 + eps);
-        //     curvature = [curvature; curvature(end)]; % Padding to match dimensions
-
-        //     % Normalize curvature to compute convexity measure
-        //     maxCurvature = max(curvature);
-        //     if maxCurvature > 0
-        //         result = curvature / (maxCurvature + eps);
-        //     else
-        //         result = zeros(N, 1);
-        //     end
-
         case 'convexity'
-            % Compute curvature (κ) using the derivatives
-            curvature = abs(dX .* diff(dY) - dY .* diff(dX)) ./ (sqrt(dX.^2 + dY.^2).^3 + eps);
-            curvature = [curvature; curvature(end)]; % Padding to match dimensions
-
-            % Average curvature over the range [i-K, i+K]
+            % Compute the second derivative of the radius (R)
+            dR = smoothdata(dR); % Smooth first derivative
+            ddR = diff(dR); % Compute second derivative
+            if length(ddR) >= 1
+                ddR = [ddR; ddR(end)]; % Pad to match original size
+            else
+                ddR = dR; % Fallback for small branches
+            end
+            ddR = smoothdata(ddR); % Smooth second derivative
+            
+            % Convexity computation based on windowed intervals
             if N >= 3
-                for i = 1:N
-                    % Effective K (handle boundary cases)
+                for i = 2:N-1
+                    % Effective window size K
                     eK = min(min(i-1, N-i), K);
-                    range = max(1, i-eK):min(N, i+eK);
-
-                    % Sum curvature over the range
-                    integralCurvature = sum(curvature(range));
-
-                    % Normalize by range length (average curvature)
-                    rangeLength = length(range);
-                    result(i) = integralCurvature / rangeLength;
+                    % Compute local convexity as average of -ddR over the window
+                    result(i) = -mean(ddR(i-eK:i+eK));
                 end
             end
 
-            % Normalize the result to [0, 1]
-            maxResult = max(result);
-            if maxResult > 0
-                result = result / maxResult;
-            else
-                result = zeros(N, 1); % In case all curvatures are zero
-            end
-
+            % Normalize the convexity measure to the range [0, 1]
+            result = (result - min(result)) / (max(result) - min(result));
             
         otherwise
             
