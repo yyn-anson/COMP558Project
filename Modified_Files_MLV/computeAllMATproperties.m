@@ -37,7 +37,7 @@ function [MATcontourImages,MATskeletonImages,skeletalBranches]=computeAllMATprop
 skeletalBranches = traceSkeleton(MAT);
 
 if nargin < 3
-    properties = {'parallelism', 'separation', 'mirror', 'convexity'};
+    properties = {'parallelism', 'separation', 'mirror', 'convexity', 'taper'};
 end
 
 for propertyInd = 1:length(properties)
