@@ -29,3 +29,11 @@ Dataset structure:
                ...
            ...
 
+## Reference:
+1. MLV toolbox
+   bwlabToronto/MLV_toolbox
+github.com
+2. Contour/LineDrawing dataset given by Dirk Warther's lab
+   https://osf.io/9squn/
+3. Pytorch Example
+   https://github.com/pytorch/examples/tree/main/imagenet
