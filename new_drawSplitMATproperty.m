@@ -1,7 +1,7 @@
 function new_drawSplitMATproperty(vecLD, property, markerSize)
     % my_drawSplitMATpropertyWithRectangles(vecLD, property, markerSize)
-    % splits the MAT property into top 50% and bottom 50%, visualizes them with
-    % rectangle outlines, as seen in paper
+    % splits the MAT property into desired split, visualizes them with
+    % rectangle outlines, as seen in paper (param = bottom percentage)
     %
     % Input:
     %   vecLD: The vectorized line drawing
@@ -25,10 +25,17 @@ function new_drawSplitMATproperty(vecLD, property, markerSize)
     allY = vecLD.([property, '_allY']);
     allScores = vecLD.([property, '_allScores']);
 
-    %splitting scores into top 50% and bottom 50%
-    medianScore = median(allScores);
-    topIdx = allScores > medianScore;    %top 50%
-    bottomIdx = allScores <= medianScore; %bottom 50%
+    %splitting scores into top 50% and bottom 50% (changed)
+    %medianScore = median(allScores);
+    %topIdx = allScores > medianScore;    %top 50%
+    %bottomIdx = allScores <= medianScore; %bottom 50%
+
+    %splitting the scores into top 100*(1-param)%
+    %param = bottom split value
+    param = 0.5
+    thresholdScore = quantile(allScores, param);
+    topIdx = allScores > thresholdScore; 
+    bottomIdx = allScores <= thresholdScore; 
     topX = allX(topIdx);
     topY = allY(topIdx);
     bottomX = allX(bottomIdx);
