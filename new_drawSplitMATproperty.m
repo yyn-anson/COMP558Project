@@ -11,6 +11,9 @@ function new_drawSplitMATproperty(vecLD, property, markerSize)
     % Output:
     %   Saves three images: 'property'_top50.png, 'property'_bot50.png, 'property'_intact.png
 
+    %param = Percentile we want to get the points for
+    param = 0.5;
+
     if nargin < 3
         markerSize = 1;
     end
@@ -25,10 +28,10 @@ function new_drawSplitMATproperty(vecLD, property, markerSize)
     allY = vecLD.([property, '_allY']);
     allScores = vecLD.([property, '_allScores']);
 
-    %splitting scores into top 50% and bottom 50%
-    medianScore = median(allScores);
-    topIdx = allScores > medianScore;    %top 50%
-    bottomIdx = allScores <= medianScore; %bottom 50%
+    %splitting the scores into top 100*(1-param)%
+    thresholdScore = quantile(allScores, param);
+    topIdx = allScores > thresholdScore; 
+    bottomIdx = allScores <= thresholdScore; 
     topX = allX(topIdx);
     topY = allY(topIdx);
     bottomX = allX(bottomIdx);
