@@ -2,8 +2,8 @@
 addpath(genpath('.'));
 
 % Specify the input and output directories
-inputDir = 'dataset/LD_dataset/val/city'; 
-outputDir = 'dataset/LD_dataset/new_val/city'; 
+inputDir = 'dataset/LD_dataset/val/beaches'; 
+outputDir = 'dataset/LD_dataset/new_val/beaches'; 
 
 % Get a list of images
 fileList = dir(fullfile(inputDir, '*.png'));
@@ -67,6 +67,9 @@ for i = 1:length(fileList)
         
         % Remove figure background so that only the plotted content remains
         set(figHandle, 'Color', 'none'); 
+        
+        % Optional: Remove the title if you do not want it
+        title([prop, ' score'],'FontSize',18);
         
         outputPropFig = fullfile(outputDir, [baseName, '_', prop, '_score.png']);
         saveas(figHandle, outputPropFig);
