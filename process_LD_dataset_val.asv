@@ -2,8 +2,8 @@
 addpath(genpath('.'));
 
 % Specify the input and output directories
-inputDir = 'dataset/LD_dataset/val/beaches'; 
-outputDir = 'dataset/LD_dataset/new_val/beaches'; 
+inputDir = 'dataset/LD_dataset/val/forests'; 
+outputDir = 'dataset/LD_dataset/new_val/forests'; 
 
 % Get a list of images
 fileList = dir(fullfile(inputDir, '*.png'));
@@ -68,9 +68,6 @@ for i = 1:length(fileList)
         % Remove figure background so that only the plotted content remains
         set(figHandle, 'Color', 'none'); 
         
-        % Optional: Remove the title if you do not want it
-        title([prop, ' score'],'FontSize',18);
-        
         outputPropFig = fullfile(outputDir, [baseName, '_', prop, '_score.png']);
         saveas(figHandle, outputPropFig);
         close(figHandle);
@@ -79,7 +76,7 @@ for i = 1:length(fileList)
     outputLDStruct = fullfile(outputDir, [baseName, '_scoredContours.mat']);
     save(outputLDStruct, 'vecLD', 'MAT', 'MATcontourImages', 'MATskeletonImages', 'skeletalBranches');
 
-   % After all properties have been processed and saved, we now handle the requested concatenation.
+    % After all properties have been processed and saved, we now handle the requested concatenation.
     % We'll assume that the images exist and were created by the steps above.
     
     % Load the three property images
@@ -109,7 +106,17 @@ for i = 1:length(fileList)
     else
         parallelismGray = parallelismImg;
     end
+    if size(mirrorImg, 3) == 3
+        mirrorGray = rgb2gray(mirrorImg);
+    else
+        mirrorGray = mirrorImg;
+    end
     
+    if size(parallelismImg, 3) == 3
+        parallelismGray = rgb2gray(parallelismImg);
+    else
+        parallelismGray = parallelismImg;
+    end
     % Concatenate along the third dimension to form a 3-channel image
     concatenatedImg = cat(3, convexityGray, mirrorGray, parallelismGray);
     
