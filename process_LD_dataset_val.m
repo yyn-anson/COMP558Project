@@ -2,8 +2,8 @@
 addpath(genpath('.'));
 
 % Specify the input and output directories
-inputDir = 'dataset/LD_dataset/val/highways'; 
-outputDir = 'dataset/LD_dataset/new_val/highways'; 
+inputDir = 'dataset/LD_dataset/val/offices'; 
+outputDir = 'dataset/LD_dataset/new_val/offices'; 
 
 % Get a list of images
 fileList = dir(fullfile(inputDir, '*.png'));
@@ -75,7 +75,8 @@ for i = 1:length(fileList)
     
     outputLDStruct = fullfile(outputDir, [baseName, '_scoredContours.mat']);
     save(outputLDStruct, 'vecLD', 'MAT', 'MATcontourImages', 'MATskeletonImages', 'skeletalBranches');
-
+    
+    %{
     % After all properties have been processed and saved, we now handle the requested concatenation.
     % We'll assume that the images exist and were created by the steps above.
     
@@ -91,6 +92,8 @@ for i = 1:length(fileList)
     parallelismImg = imread(parallelismImgPath);
     taperImg = imread(taperImgPath);
     separationImg = imread(separationImgPath);
+
+
     
     % Convert to grayscale if they are RGB
     if size(convexityImg, 3) == 3
@@ -138,4 +141,5 @@ for i = 1:length(fileList)
 
     outputConcatImg = fullfile(outputDir, [baseName, '_convexity_parallelism_separation_concat.png']);
     imwrite(concatenatedImg3, outputConcatImg);
+    %}
 end
