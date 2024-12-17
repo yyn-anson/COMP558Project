@@ -10,7 +10,7 @@ $categories = @(
 
 # Loop through each category and clear files
 foreach ($category in $categories) {
-    $path = "dataset/LD_dataset/val/$category"
+    $path = "dataset/LD_dataset/train/$category"
 
     # Check if the directory exists
     if (Test-Path -Path $path) {
@@ -23,7 +23,7 @@ foreach ($category in $categories) {
 # Loop through each category and move files
 foreach ($category in $categories) {
     $sourcePath = "dataset/LD_dataset/new_val/$category"
-    $destinationPath = "dataset/LD_dataset/val/$category"
+    $destinationPath = "dataset/LD_dataset/train/$category"
 
     # Ensure the destination directory exists
     if (-not (Test-Path -Path $destinationPath)) {
@@ -31,7 +31,8 @@ foreach ($category in $categories) {
     }
 
     # Move files matching the filter
-    Get-ChildItem -Path $sourcePath -Filter "*_convexity_parallelism_separation_concat.png" -File |
+    #Get-ChildItem -Path $sourcePath -Filter "*_line_drawing.png" -File |
+    Get-ChildItem -Path $sourcePath -Filter "*_convexity_mirror_taper_concat.png" -File |
     ForEach-Object {
         Move-Item -Path $_.FullName -Destination $destinationPath
     }
