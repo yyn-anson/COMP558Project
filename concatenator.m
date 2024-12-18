@@ -56,8 +56,8 @@ for c = 1:length(categories)
         propPaths_bot50 = struct();
         for p = 1:length(properties)
             prop = properties{p};
-            top50Path = fullfile(outputDirVal, [baseName, '_', prop, '_score_top50.png']);
-            bot50Path = fullfile(outputDirVal, [baseName, '_', prop, '_score_bot50.png']);
+            top50Path = fullfile(outputDirVal, [baseName, '_', prop, '_top50.png']);
+            bot50Path = fullfile(outputDirVal, [baseName, '_', prop, '_bot50.png']);
             if ~exist(top50Path, 'file') || ~exist(bot50Path, 'file')
                 % If any property map doesn't exist, skip this image
                 continue;
