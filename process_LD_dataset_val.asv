@@ -1,0 +1,143 @@
+% Ensure the required toolbox functions are on the MATLAB path
+addpath(genpath('.'));
+
+% Specify the input and output directories
+inputDir = 'dataset/LD_dataset/val/offices'; 
+outputDir = 'dataset/LD_dataset/new_val/offices'; 
+
+% Get a list of images
+fileList = dir(fullfile(inputDir, '*.png'));
+
+% Properties to compute
+propertiesToCompute = {'parallelism', 'separation', 'mirror', 'convexity', 'taper'};
+
+for i = 1:length(fileList)
+    fileName = fileList(i).name;
+    inputFilePath = fullfile(inputDir, fileName);
+    
+    fprintf('Processing: %s\n', inputFilePath);
+    
+    % Step 1: Vectorize the line drawing
+    im = imread(inputFilePath);
+    
+    if size(im,3) == 3
+        im = rgb2gray(im);
+    end
+    imRGB = cat(3, im, im, im);
+    
+    % Use a unique temp file name for each iteration
+    tempFile = fullfile(tempdir, sprintf('temp_line_drawing_%d.png', i));
+    imwrite(imRGB, tempFile);
+    
+    vecLD = traceLineDrawingFromRGB(tempFile);
+    
+    % Step 2: Render line drawing as an image
+    img_LD = renderLinedrawing(vecLD, []);
+    
+    [~, baseName, ~] = fileparts(fileName);
+    outputLineDrawing = fullfile(outputDir, [baseName, '_line_drawing.png']);
+    imwrite(img_LD, outputLineDrawing);
+    
+    % Step 3: Compute MAT
+    MAT = computeMAT(img_LD, 28);
+    
+    overlayImg = imoverlay(rgb2gray(img_LD), MAT.skeleton, 'b');
+    outputMATSkeleton = fullfile(outputDir, [baseName, '_MAT_skeleton_overlay.png']);
+    imwrite(overlayImg, outputMATSkeleton);
+    
+    % Step 4: Compute contour and MAT-based properties
+    vecLD = computeContourProperties(vecLD);
+    [vecLD, MAT, ~] = computeAllMATfromVecLD(vecLD); 
+    
+    [MATcontourImages, MATskeletonImages, skeletalBranches] = ...
+        computeAllMATproperties(MAT, img_LD, propertiesToCompute);
+
+    % Step 5: Visualize and save property maps
+    for p = 1:length(propertiesToCompute)
+        prop = propertiesToCompute{p};
+
+        % Use explicit figure handle instead of gcf
+        figHandle = figure('Visible','off');
+        
+        drawMATproperty(vecLD, prop);
+        
+        % Remove all axis decorations
+        axis off;  % Turns off axes, ticks, labels
+        set(gca, 'Position', [0 0 1 1]); % Make the plotted content fill the entire figure
+        
+        % Remove figure background so that only the plotted content remains
+        set(figHandle, 'Color', 'none'); 
+        
+        outputPropFig = fullfile(outputDir, [baseName, '_', prop, '_score.png']);
+        saveas(figHandle, outputPropFig);
+        close(figHandle);
+    end
+    
+    outputLDStruct = fullfile(outputDir, [baseName, '_scoredContours.mat']);
+    save(outputLDStruct, 'vecLD', 'MAT', 'MATcontourImages', 'MATskeletonImages', 'skeletalBranches');
+
+    % After all properties have been processed and saved, we now handle the requested concatenation.
+    % We'll assume that the images exist and were created by the steps above.
+    
+    % Load the three property images
+    convexityImgPath = fullfile(outputDir, [baseName, '_convexity_score.png']);
+    mirrorImgPath = fullfile(outputDir, [baseName, '_mirror_score.png']);
+    parallelismImgPath = fullfile(outputDir, [baseName, '_parallelism_score.png']);
+    taperImgPath = fullfile(outputDir, [baseName, '_taper_score.png']);
+    separationImgPath = fullfile(outputDir, [baseName, '_separation_score.png']);
+    
+    convexityImg = imread(convexityImgPath);
+    mirrorImg = imread(mirrorImgPath);
+    parallelismImg = imread(parallelismImgPath);
+    taperImg = imread(taperImgPath);
+    separationImg = imread(separationImgPath);
+
+    
+    
+    % Convert to grayscale if they are RGB
+    if size(convexityImg, 3) == 3
+        convexityGray = rgb2gray(convexityImg);
+    else
+        convexityGray = convexityImg; % already grayscale
+    end
+    
+    if size(mirrorImg, 3) == 3
+        mirrorGray = rgb2gray(mirrorImg);
+    else
+        mirrorGray = mirrorImg;
+    end
+    
+    if size(parallelismImg, 3) == 3
+        parallelismGray = rgb2gray(parallelismImg);
+    else
+        parallelismGray = parallelismImg;
+    end
+    if size(taperImg, 3) == 3
+        taperGray = rgb2gray(taperImg);
+    else
+        taperGray = taperImg;
+    end
+    
+    if size(separationImg, 3) == 3
+        separationGray = rgb2gray(separationImg);
+    else
+        separationGray = separationImg;
+    end
+    % Concatenate along the third dimension to form a 3-channel image
+    concatenatedImg = cat(3, convexityGray, mirrorGray, parallelismGray);
+    
+    % Save the concatenated 3-channel grayscale image
+    outputConcatImg = fullfile(outputDir, [baseName, '_convexity_mirror_parallelism_concat.png']);
+    imwrite(concatenatedImg, outputConcatImg);
+
+    % Repeat for a couple combinations
+    concatenatedImg2 = cat(3, convexityGray, taperGray, separationGray);
+
+    outputConcatImg = fullfile(outputDir, [baseName, '_convexity_taper_separation_concat.png']);
+    imwrite(concatenatedImg2, outputConcatImg);
+
+    concatenatedImg3 = cat(3, convexityGray, taperGray, separationGray);
+
+    outputConcatImg = fullfile(outputDir, [baseName, '_convexity_parallelism_separation_concat.png']);
+    imwrite(concatenatedImg3, outputConcatImg);
+end
