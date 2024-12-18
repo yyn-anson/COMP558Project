@@ -59,7 +59,7 @@ for i = 1:length(fileList)
         % Use explicit figure handle instead of gcf
         figHandle = figure('Visible','off');
         
-        drawMATproperty(vecLD, prop);
+        new_drawSplitMATproperty(vecLD, prop);
         
         % Remove all axis decorations
         axis off;  % Turns off axes, ticks, labels
@@ -76,70 +76,5 @@ for i = 1:length(fileList)
     outputLDStruct = fullfile(outputDir, [baseName, '_scoredContours.mat']);
     save(outputLDStruct, 'vecLD', 'MAT', 'MATcontourImages', 'MATskeletonImages', 'skeletalBranches');
     
-    %{
-    % After all properties have been processed and saved, we now handle the requested concatenation.
-    % We'll assume that the images exist and were created by the steps above.
-    
-    % Load the three property images
-    convexityImgPath = fullfile(outputDir, [baseName, '_convexity_score.png']);
-    mirrorImgPath = fullfile(outputDir, [baseName, '_mirror_score.png']);
-    parallelismImgPath = fullfile(outputDir, [baseName, '_parallelism_score.png']);
-    taperImgPath = fullfile(outputDir, [baseName, '_taper_score.png']);
-    separationImgPath = fullfile(outputDir, [baseName, '_separation_score.png']);
-    
-    convexityImg = imread(convexityImgPath);
-    mirrorImg = imread(mirrorImgPath);
-    parallelismImg = imread(parallelismImgPath);
-    taperImg = imread(taperImgPath);
-    separationImg = imread(separationImgPath);
-
-
-    
-    % Convert to grayscale if they are RGB
-    if size(convexityImg, 3) == 3
-        convexityGray = rgb2gray(convexityImg);
-    else
-        convexityGray = convexityImg; % already grayscale
-    end
-    
-    if size(mirrorImg, 3) == 3
-        mirrorGray = rgb2gray(mirrorImg);
-    else
-        mirrorGray = mirrorImg;
-    end
-    
-    if size(parallelismImg, 3) == 3
-        parallelismGray = rgb2gray(parallelismImg);
-    else
-        parallelismGray = parallelismImg;
-    end
-    if size(taperImg, 3) == 3
-        taperGray = rgb2gray(taperImg);
-    else
-        taperGray = taperImg;
-    end
-    
-    if size(separationImg, 3) == 3
-        separationGray = rgb2gray(separationImg);
-    else
-        separationGray = separationImg;
-    end
-    % Concatenate along the third dimension to form a 3-channel image
-    concatenatedImg = cat(3, convexityGray, mirrorGray, parallelismGray);
-    
-    % Save the concatenated 3-channel grayscale image
-    outputConcatImg = fullfile(outputDir, [baseName, '_convexity_mirror_parallelism_concat.png']);
-    imwrite(concatenatedImg, outputConcatImg);
-
-    % Repeat for a couple combinations
-    concatenatedImg2 = cat(3, convexityGray, taperGray, separationGray);
-
-    outputConcatImg = fullfile(outputDir, [baseName, '_convexity_taper_separation_concat.png']);
-    imwrite(concatenatedImg2, outputConcatImg);
-
-    concatenatedImg3 = cat(3, convexityGray, taperGray, separationGray);
-
-    outputConcatImg = fullfile(outputDir, [baseName, '_convexity_parallelism_separation_concat.png']);
-    imwrite(concatenatedImg3, outputConcatImg);
-    %}
+ 
 end
